@@ -2783,6 +2783,11 @@ create_ui (PlaybackApp * app)
     g_signal_connect (app->shuttle_scale, "format_value",
         G_CALLBACK (shuttle_format_value), app);
 
+        g_signal_connect (app->seek_scale, "value-changed",
+      G_CALLBACK (seek_cb), app);
+
+
+    
     gtk_box_pack_start (GTK_BOX (hbox), app->shuttle_scale, TRUE, TRUE, 2);
 
     gtk_container_add (GTK_CONTAINER (step), hbox);
