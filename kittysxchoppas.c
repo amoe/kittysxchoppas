@@ -2532,6 +2532,7 @@ create_ui (PlaybackApp * app)
 {
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
+  GtkWidget *my_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2569,6 +2570,8 @@ create_ui (PlaybackApp * app)
   play_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_PLAY);
   pause_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_PAUSE);
   stop_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_STOP);
+
+  my_button = gtk_button_new_with_label("Do a thing");
 
   /* seek expander */
   {
@@ -3208,6 +3211,7 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), play_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), pause_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), stop_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), my_button, FALSE, FALSE, 2);
 
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
   if (playbin)
