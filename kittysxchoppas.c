@@ -232,7 +232,9 @@ cut_cb (GtkButton * button, PlaybackApp * app);
 static gchar *get_output_path(PlaybackApp *app);
 static void update_marker_labels(PlaybackApp *app);
 static void
-seek_start_cb (GtkButton * button, PlaybackApp * app);
+seek_back_frame_cb (GtkButton * button, PlaybackApp * app);
+static void
+seek_forward_frame_cb (GtkButton * button, PlaybackApp * app);
 
 
 /* pipeline construction */
@@ -2564,7 +2566,7 @@ create_ui (PlaybackApp * app)
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
   GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button,
-    *seek_start_button;
+    *back_frame_button, *forward_frame_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2611,8 +2613,10 @@ create_ui (PlaybackApp * app)
   app->marker_b_display = gtk_label_new(NULL);
   update_marker_labels(app);
 
-  seek_start_button = gtk_button_new_with_label("Go to start");
+  back_frame_button = gtk_button_new_with_label("Seek back frame");
+  forward_frame_button = gtk_button_new_with_label("Seek forward frame");
 
+  
   /* seek expander */
   {
     GtkWidget *accurate_checkbox, *key_checkbox, *loop_checkbox,
@@ -3263,7 +3267,8 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), cut_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_a_display, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (hbox), seek_start_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), back_frame_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), forward_frame_button, FALSE, FALSE, 2);
 
   
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
@@ -3289,7 +3294,9 @@ create_ui (PlaybackApp * app)
       app);
   g_signal_connect (G_OBJECT (cut_button), "clicked", G_CALLBACK (cut_cb),
       app);
-  g_signal_connect (G_OBJECT (seek_start_button), "clicked", G_CALLBACK (seek_start_cb),
+  g_signal_connect (G_OBJECT (back_frame_button), "clicked", G_CALLBACK (seek_back_frame_cb),
+      app);
+  g_signal_connect (G_OBJECT (forward_frame_button), "clicked", G_CALLBACK (seek_forward_frame_cb),
       app);
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
@@ -3585,7 +3592,7 @@ static void update_marker_labels(PlaybackApp *app) {
 }
 
 static void
-seek_start_cb (GtkButton *button, PlaybackApp * app) {
+seek_forward_frame_cb (GtkButton *button, PlaybackApp * app) {
   gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
 
   
@@ -3604,5 +3611,28 @@ seek_start_cb (GtkButton *button, PlaybackApp * app) {
   printf("increment is %lf\n", increment);
   
   set_scale(app, current_value + increment);
+  seek_cb(GTK_RANGE(app->seek_scale), app);
+}
+
+static void
+seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
+  gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
+
+  
+  printf("nsecond is %lf\n", (double) pow(10, 9));
+  printf("n_grad is %lf\n", (double) N_GRAD);
+  printf("duration is %lf\n", (double) app->duration);
+
+  double nanosecond = pow(10, 9);
+  double n_grad = N_GRAD;
+  double duration = app->duration;
+
+  double one_second = (nanosecond * n_grad) / duration;
+
+  double increment = one_second / 30.0;
+
+  printf("increment is %lf\n", increment);
+  
+  set_scale(app, current_value - increment);
   seek_cb(GTK_RANGE(app->seek_scale), app);
 }
