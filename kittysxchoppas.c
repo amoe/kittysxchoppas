@@ -231,6 +231,9 @@ static void
 cut_cb (GtkButton * button, PlaybackApp * app);
 static gchar *get_output_path(PlaybackApp *app);
 static void update_marker_labels(PlaybackApp *app);
+static void
+seek_start_cb (GtkButton * button, PlaybackApp * app);
+
 
 /* pipeline construction */
 
@@ -567,6 +570,7 @@ do_seek (PlaybackApp * app, GstFormat format, gint64 position)
 static void
 seek_cb (GtkRange * range, PlaybackApp * app)
 {
+  printf("inside seek callback\n");
   gint64 real;
 
   real =
@@ -2554,7 +2558,8 @@ create_ui (PlaybackApp * app)
 {
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
-  GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button;
+  GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button,
+    *seek_start_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2596,10 +2601,12 @@ create_ui (PlaybackApp * app)
   set_marker_a_button = gtk_button_new_with_label("Set marker A");
   set_marker_b_button = gtk_button_new_with_label("Set marker B");
   cut_button = gtk_button_new_with_label("Cut");
-
+  
   app->marker_a_display = gtk_label_new(NULL);
   app->marker_b_display = gtk_label_new(NULL);
   update_marker_labels(app);
+
+  seek_start_button = gtk_button_new_with_label("Go to start");
 
   /* seek expander */
   {
@@ -2782,9 +2789,6 @@ create_ui (PlaybackApp * app)
         G_CALLBACK (shuttle_value_changed), app);
     g_signal_connect (app->shuttle_scale, "format_value",
         G_CALLBACK (shuttle_format_value), app);
-
-        g_signal_connect (app->seek_scale, "value-changed",
-      G_CALLBACK (seek_cb), app);
 
 
     
@@ -2988,7 +2992,7 @@ create_ui (PlaybackApp * app)
 
   /* seek bar */
   adjustment =
-      GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.00, N_GRAD, 0.1, 1.0, 1.0));
+      GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.00, N_GRAD, 10, 100, 100));
   app->seek_scale = gtk_hscale_new (adjustment);
   gtk_scale_set_digits (GTK_SCALE (app->seek_scale), 2);
   gtk_scale_set_value_pos (GTK_SCALE (app->seek_scale), GTK_POS_RIGHT);
@@ -3003,6 +3007,11 @@ create_ui (PlaybackApp * app)
   g_signal_connect (app->seek_scale, "format_value", G_CALLBACK (format_value),
       app);
 
+
+     g_signal_connect (app->seek_scale, "value-changed",
+      G_CALLBACK (seek_cb), app);
+
+  
   if (app->pipeline_type == 0) {
     GtkWidget *pb2vbox, *boxes, *boxes2, *panel, *boxes3;
     GtkWidget *volume_label, *shot_button;
@@ -3249,7 +3258,9 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), cut_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_a_display, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), seek_start_button, FALSE, FALSE, 2);
 
+  
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
   if (playbin)
     gtk_box_pack_start (GTK_BOX (vbox), playbin, FALSE, FALSE, 2);
@@ -3272,6 +3283,8 @@ create_ui (PlaybackApp * app)
   g_signal_connect (G_OBJECT (set_marker_b_button), "clicked", G_CALLBACK (set_marker_b_cb),
       app);
   g_signal_connect (G_OBJECT (cut_button), "clicked", G_CALLBACK (cut_cb),
+      app);
+  g_signal_connect (G_OBJECT (seek_start_button), "clicked", G_CALLBACK (seek_start_cb),
       app);
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
@@ -3433,6 +3446,11 @@ main (int argc, char **argv)
 
   connect_bus_signals (&app);
 
+  gtk_widget_grab_focus(app.seek_scale);
+
+  play_cb(NULL, &app);
+  pause_cb(NULL, &app);
+  
   gtk_main ();
 
   g_print ("NULL pipeline\n");
@@ -3559,4 +3577,10 @@ static void update_marker_labels(PlaybackApp *app) {
     g_free(start_point_text);
     g_free(end_point_text);
 
+}
+
+static void
+seek_start_cb (GtkButton *button, PlaybackApp * app) {
+  set_scale(app, 0.0);
+  seek_cb(app->seek_scale, app);
 }
