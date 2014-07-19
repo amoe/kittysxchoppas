@@ -54,6 +54,8 @@
 GST_DEBUG_CATEGORY_STATIC (playback_debug);
 #define GST_CAT_DEFAULT (playback_debug)
 
+
+
 /* Copied from gst-plugins-base/gst/playback/gstplay-enum.h */
 typedef enum
 {
@@ -191,6 +193,10 @@ typedef struct
 
   const GstFormatDefinition *seek_format;
   GList *formats;
+
+  gint64 marker_a_position;
+  gint64 marker_b_position;
+  guint8 number_cuts;
 } PlaybackApp;
 
 static void clear_streams (PlaybackApp * app);
@@ -210,6 +216,19 @@ static void ringbuffer_maxsize_activate_cb (GtkEntry * entry,
 static void connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app);
 static void av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app);
 static void subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static gchar *generate_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+);
+
+static void
+set_marker_a_cb (GtkButton * button, PlaybackApp * app);
+static void
+set_marker_b_cb (GtkButton * button, PlaybackApp * app);
+static void
+cut_cb (GtkButton * button, PlaybackApp * app);
+static gchar *get_output_path(PlaybackApp *app);
+
 
 /* pipeline construction */
 
@@ -819,19 +838,6 @@ failed:
     gtk_statusbar_push (GTK_STATUSBAR (app->statusbar), app->status_id,
         "Stop failed");
   }
-}
-
-static void
-mybutton_cb (GtkButton * button, PlaybackApp * app)
-{
-  printf("TURN DOWN FOR WHAT?!\n");
-  gint64  real =
-      gtk_range_get_value (GTK_RANGE (app->seek_scale)) * app->duration /
-      N_GRAD;
-
-  printf("value=%f, real=%" G_GINT64_FORMAT "\n",
-      gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
-
 }
 
 
@@ -2546,7 +2552,7 @@ create_ui (PlaybackApp * app)
 {
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
-  GtkWidget *my_button;
+  GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2585,7 +2591,9 @@ create_ui (PlaybackApp * app)
   pause_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_PAUSE);
   stop_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_STOP);
 
-  my_button = gtk_button_new_with_label("Do a thing");
+  set_marker_a_button = gtk_button_new_with_label("Set marker A");
+  set_marker_b_button = gtk_button_new_with_label("Set marker B");
+  cut_button = gtk_button_new_with_label("Cut");
 
   /* seek expander */
   {
@@ -3225,7 +3233,9 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), play_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), pause_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), stop_button, FALSE, FALSE, 2);
-  gtk_box_pack_start (GTK_BOX (hbox), my_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), set_marker_a_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), set_marker_b_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), cut_button, FALSE, FALSE, 2);
 
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
   if (playbin)
@@ -3244,7 +3254,11 @@ create_ui (PlaybackApp * app)
       app);
   g_signal_connect (G_OBJECT (stop_button), "clicked", G_CALLBACK (stop_cb),
       app);
-  g_signal_connect (G_OBJECT (my_button), "clicked", G_CALLBACK (mybutton_cb),
+  g_signal_connect (G_OBJECT (set_marker_a_button), "clicked", G_CALLBACK (set_marker_a_cb),
+      app);
+  g_signal_connect (G_OBJECT (set_marker_b_button), "clicked", G_CALLBACK (set_marker_b_cb),
+      app);
+  g_signal_connect (G_OBJECT (cut_button), "clicked", G_CALLBACK (cut_cb),
       app);
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
@@ -3271,6 +3285,10 @@ set_defaults (PlaybackApp * app)
   g_mutex_init (&app->state_mutex);
 
   app->play_rate = 1.0;
+
+  app->marker_a_position = 0;
+  app->marker_a_position = 0;
+  app->number_cuts = 0;
 }
 
 static void
@@ -3410,4 +3428,100 @@ main (int argc, char **argv)
   reset_app (&app);
 
   return 0;
+}
+
+static void
+set_marker_a_cb (GtkButton * button, PlaybackApp * app)
+{
+  printf("SETTING MARKER A\n");
+  gint64  real =
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)) * app->duration /
+      N_GRAD;
+
+  printf("value=%f, real=%" G_GINT64_FORMAT "\n",
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
+
+  app->marker_a_position = real;
+}
+
+static void
+set_marker_b_cb (GtkButton * button, PlaybackApp * app)
+{
+    printf("SETTING MARKER B\n");
+
+  gint64  real =
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)) * app->duration /
+      N_GRAD;
+
+  printf("value=%f, real=%" G_GINT64_FORMAT "\n",
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
+
+    app->marker_b_position = real;
+
+}
+
+static void
+cut_cb (GtkButton * button, PlaybackApp * app)
+{
+  printf("CUTTING FROM %" G_GINT64_FORMAT " TO %" G_GINT64_FORMAT "\n",
+	 app->marker_a_position, app->marker_b_position);
+
+  char *input_path = app->current_path->data;
+  char *output_path = get_output_path(app);
+
+  double seconds_conversion = pow(10, 9);
+  
+  double second_start = app->marker_a_position / seconds_conversion;
+  double second_end = app->marker_b_position / seconds_conversion;
+  
+  char *command = generate_cut_command(
+     input_path, output_path, second_start, second_end
+  );
+
+  printf("Will run command: '%s'\n", command);
+  int ret = system(command);
+  if (ret != 0)
+      g_warning("system call failed with return code %d", ret);
+
+  printf("Cut finished.\n");
+}
+
+
+static gchar *get_output_path(PlaybackApp *app) {
+    guint8 this_cut = ++app->number_cuts;
+    const gchar *homedir = g_get_home_dir();
+    GFile *parent_dir = g_file_new_for_path(homedir);
+    gchar *basename = g_strdup_printf("output-%03d.mkv", this_cut);
+    GFile *output_file = g_file_get_child(parent_dir, basename);
+
+    gchar *ret = g_file_get_path(output_file);
+
+    g_object_unref(parent_dir);
+    g_object_unref(output_file);
+    g_free(basename);
+
+    return ret;
+}
+
+
+
+static gchar *generate_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+) {
+    char *command_template
+      = "ffmpeg -fflags +genpts -y -i %s -ss %.3f -to %.3f -codec copy %s";
+
+    char *quoted_input_path = g_shell_quote(input_path);
+    char *quoted_output_path = g_shell_quote(output_path);
+
+    gchar *command = g_strdup_printf(
+        command_template, quoted_input_path, start_position, end_position,
+        quoted_output_path
+    );
+    
+    g_free(quoted_input_path);
+    g_free(quoted_output_path);
+
+    return command;
 }
