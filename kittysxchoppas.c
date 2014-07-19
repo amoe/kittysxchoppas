@@ -825,6 +825,13 @@ static void
 mybutton_cb (GtkButton * button, PlaybackApp * app)
 {
   printf("TURN DOWN FOR WHAT?!\n");
+  gint64  real =
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)) * app->duration /
+      N_GRAD;
+
+  printf("value=%f, real=%" G_GINT64_FORMAT "\n",
+      gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
+
 }
 
 
