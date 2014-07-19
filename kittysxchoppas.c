@@ -822,6 +822,13 @@ failed:
 }
 
 static void
+mybutton_cb (GtkButton * button, PlaybackApp * app)
+{
+  printf("TURN DOWN FOR WHAT?!\n");
+}
+
+
+static void
 snap_before_toggle_cb (GtkToggleButton * button, PlaybackApp * app)
 {
   app->snap_before = gtk_toggle_button_get_active (button);
@@ -3229,6 +3236,8 @@ create_ui (PlaybackApp * app)
   g_signal_connect (G_OBJECT (pause_button), "clicked", G_CALLBACK (pause_cb),
       app);
   g_signal_connect (G_OBJECT (stop_button), "clicked", G_CALLBACK (stop_cb),
+      app);
+  g_signal_connect (G_OBJECT (my_button), "clicked", G_CALLBACK (mybutton_cb),
       app);
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
