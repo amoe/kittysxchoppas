@@ -197,6 +197,8 @@ typedef struct
   gint64 marker_a_position;
   gint64 marker_b_position;
   guint8 number_cuts;
+  GtkWidget *marker_a_display, *marker_b_display;
+
 } PlaybackApp;
 
 static void clear_streams (PlaybackApp * app);
@@ -228,7 +230,7 @@ set_marker_b_cb (GtkButton * button, PlaybackApp * app);
 static void
 cut_cb (GtkButton * button, PlaybackApp * app);
 static gchar *get_output_path(PlaybackApp *app);
-
+static void update_marker_labels(PlaybackApp *app);
 
 /* pipeline construction */
 
@@ -2595,6 +2597,10 @@ create_ui (PlaybackApp * app)
   set_marker_b_button = gtk_button_new_with_label("Set marker B");
   cut_button = gtk_button_new_with_label("Cut");
 
+  app->marker_a_display = gtk_label_new(NULL);
+  app->marker_b_display = gtk_label_new(NULL);
+  update_marker_labels(app);
+
   /* seek expander */
   {
     GtkWidget *accurate_checkbox, *key_checkbox, *loop_checkbox,
@@ -3236,6 +3242,8 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), set_marker_a_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), set_marker_b_button, FALSE, FALSE, 2);
   gtk_box_pack_start (GTK_BOX (hbox), cut_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), app->marker_a_display, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
 
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
   if (playbin)
@@ -3442,6 +3450,8 @@ set_marker_a_cb (GtkButton * button, PlaybackApp * app)
       gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
 
   app->marker_a_position = real;
+
+  update_marker_labels(app);
 }
 
 static void
@@ -3457,6 +3467,8 @@ set_marker_b_cb (GtkButton * button, PlaybackApp * app)
       gtk_range_get_value (GTK_RANGE (app->seek_scale)), real);
 
     app->marker_b_position = real;
+
+      update_marker_labels(app);
 
 }
 
@@ -3484,6 +3496,10 @@ cut_cb (GtkButton * button, PlaybackApp * app)
       g_warning("system call failed with return code %d", ret);
 
   printf("Cut finished.\n");
+
+  app->marker_a_position = 0;
+  app->marker_b_position = 0;
+  update_marker_labels(app);
 }
 
 
@@ -3524,4 +3540,18 @@ static gchar *generate_cut_command(
     g_free(quoted_output_path);
 
     return command;
+}
+
+
+static void update_marker_labels(PlaybackApp *app) {
+  // use correct format
+    gchar *start_point_text = g_strdup_printf("%ld", app->marker_a_position);
+    gchar *end_point_text = g_strdup_printf("%ld", app->marker_b_position);
+    
+    gtk_label_set_text(GTK_LABEL(app->marker_a_display), start_point_text);
+    gtk_label_set_text(GTK_LABEL(app->marker_b_display), end_point_text);
+    
+    g_free(start_point_text);
+    g_free(end_point_text);
+
 }
