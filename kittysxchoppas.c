@@ -3487,6 +3487,8 @@ set_marker_a_cb (GtkButton * button, PlaybackApp * app)
   app->marker_a_position = real;
 
   update_marker_labels(app);
+  gtk_widget_grab_focus(app->seek_scale);
+
 }
 
 static void
@@ -3504,6 +3506,7 @@ set_marker_b_cb (GtkButton * button, PlaybackApp * app)
     app->marker_b_position = real;
 
       update_marker_labels(app);
+  gtk_widget_grab_focus(app->seek_scale);
 
 }
 
@@ -3535,6 +3538,8 @@ cut_cb (GtkButton * button, PlaybackApp * app)
   app->marker_a_position = 0;
   app->marker_b_position = 0;
   update_marker_labels(app);
+    gtk_widget_grab_focus(app->seek_scale);
+
 }
 
 
@@ -3612,6 +3617,8 @@ seek_forward_frame_cb (GtkButton *button, PlaybackApp * app) {
   
   set_scale(app, current_value + increment);
   seek_cb(GTK_RANGE(app->seek_scale), app);
+    gtk_widget_grab_focus(app->seek_scale);
+
 }
 
 static void
@@ -3635,4 +3642,6 @@ seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
   
   set_scale(app, current_value - increment);
   seek_cb(GTK_RANGE(app->seek_scale), app);
+    gtk_widget_grab_focus(app->seek_scale);
+
 }
