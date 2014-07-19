@@ -573,6 +573,11 @@ seek_cb (GtkRange * range, PlaybackApp * app)
   printf("inside seek callback\n");
   gint64 real;
 
+  // To get the real value, which is 10^9 times higher than the second value,
+  // it's the scale value * duration / N_GRAD.
+
+  // Therefore, if you wan
+  
   real =
       gtk_range_get_value (GTK_RANGE (app->seek_scale)) * app->duration /
       N_GRAD;
@@ -3581,6 +3586,23 @@ static void update_marker_labels(PlaybackApp *app) {
 
 static void
 seek_start_cb (GtkButton *button, PlaybackApp * app) {
-  set_scale(app, 0.0);
-  seek_cb(app->seek_scale, app);
+  gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
+
+  
+  printf("nsecond is %lf\n", (double) pow(10, 9));
+  printf("n_grad is %lf\n", (double) N_GRAD);
+  printf("duration is %lf\n", (double) app->duration);
+
+  double nanosecond = pow(10, 9);
+  double n_grad = N_GRAD;
+  double duration = app->duration;
+
+  double one_second = (nanosecond * n_grad) / duration;
+
+  double increment = one_second / 30.0;
+
+  printf("increment is %lf\n", increment);
+  
+  set_scale(app, current_value + increment);
+  seek_cb(GTK_RANGE(app->seek_scale), app);
 }
