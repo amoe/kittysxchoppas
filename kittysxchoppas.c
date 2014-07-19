@@ -3001,7 +3001,7 @@ create_ui (PlaybackApp * app)
 
   /* seek bar */
   adjustment =
-      GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.00, N_GRAD, 10, 100, 100));
+      GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.00, N_GRAD, 10, 100, 1.0));
   app->seek_scale = gtk_hscale_new (adjustment);
   gtk_scale_set_digits (GTK_SCALE (app->seek_scale), 2);
   gtk_scale_set_value_pos (GTK_SCALE (app->seek_scale), GTK_POS_RIGHT);
