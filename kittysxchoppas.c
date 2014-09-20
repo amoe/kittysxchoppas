@@ -2612,9 +2612,9 @@ create_ui (PlaybackApp * app)
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 3);
 
   /* media controls */
-  play_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_PLAY);
-  pause_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_PAUSE);
-  stop_button = gtk_button_new_from_stock (GTK_STOCK_MEDIA_STOP);
+  play_button = gtk_button_new_with_mnemonic("_Play");
+  pause_button = gtk_button_new_with_mnemonic("P_ause");
+  stop_button = gtk_button_new_with_mnemonic("_Stop");
 
   set_marker_a_button = gtk_button_new_with_label("Set marker A");
   set_marker_b_button = gtk_button_new_with_label("Set marker B");
