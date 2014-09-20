@@ -3382,19 +3382,19 @@ main (int argc, char **argv)
   GST_DEBUG_CATEGORY_INIT (playback_debug, "playback-test", 0,
       "playback example");
 
-  if (argc < 3) {
+  if (argc < 2) {
     print_usage (argc, argv);
     exit (-1);
   }
 
-  app.pipeline_type = atoi (argv[1]);
+  app.pipeline_type = 0;
 
   if (app.pipeline_type < 0 || app.pipeline_type >= G_N_ELEMENTS (pipelines)) {
     print_usage (argc, argv);
     exit (-1);
   }
 
-  app.pipeline_spec = argv[2];
+  app.pipeline_spec = argv[1];
 
   if (g_path_is_absolute (app.pipeline_spec) &&
       (g_strrstr (app.pipeline_spec, "*") != NULL ||
@@ -3411,17 +3411,17 @@ main (int argc, char **argv)
 
   app.current_path = app.paths;
 
-  if (argc > 3 && argv[3]) {
-    if (g_path_is_absolute (argv[3]) &&
-        (g_strrstr (argv[3], "*") != NULL ||
-            g_strrstr (argv[3], "?") != NULL)) {
-      app.sub_paths = handle_wildcards (argv[3]);
+  if (argc > 2 && argv[2]) {
+    if (g_path_is_absolute (argv[2]) &&
+        (g_strrstr (argv[2], "*") != NULL ||
+            g_strrstr (argv[2], "?") != NULL)) {
+      app.sub_paths = handle_wildcards (argv[2]);
     } else {
-      app.sub_paths = g_list_prepend (app.sub_paths, g_strdup (argv[3]));
+      app.sub_paths = g_list_prepend (app.sub_paths, g_strdup (argv[2]));
     }
 
     if (!app.sub_paths) {
-      g_print ("opening %s failed\n", argv[3]);
+      g_print ("opening %s failed\n", argv[2]);
       exit (-1);
     }
 
