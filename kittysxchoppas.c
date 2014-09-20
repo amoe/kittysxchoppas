@@ -2616,6 +2616,7 @@ create_ui (PlaybackApp * app)
   back_frame_button = gtk_button_new_with_label("Seek back frame");
   forward_frame_button = gtk_button_new_with_label("Seek forward frame");
 
+  app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
   
   /* seek expander */
   {
@@ -3065,7 +3066,7 @@ create_ui (PlaybackApp * app)
     app->deinterlace_checkbox = gtk_check_button_new_with_label ("Deinterlace");
     app->soft_colorbalance_checkbox =
         gtk_check_button_new_with_label ("Soft Colorbalance");
-    app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
+
     volume_label = gtk_label_new ("Volume");
     app->volume_spinbutton = gtk_spin_button_new_with_range (0, 10.0, 0.1);
 
@@ -3082,7 +3083,6 @@ create_ui (PlaybackApp * app)
     gtk_grid_attach (GTK_GRID (boxes), app->soft_colorbalance_checkbox, 4, 1, 1,
         1);
 
-    gtk_grid_attach (GTK_GRID (boxes), app->mute_checkbox, 6, 0, 1, 1);
     gtk_grid_attach (GTK_GRID (boxes), volume_label, 5, 1, 1, 1);
     gtk_grid_attach (GTK_GRID (boxes), app->volume_spinbutton, 6, 1, 1, 1);
 
@@ -3269,6 +3269,8 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), back_frame_button, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), forward_frame_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), app->mute_checkbox, FALSE, FALSE, 2);
+
 
   
   gtk_box_pack_start (GTK_BOX (vbox), seek, FALSE, FALSE, 2);
