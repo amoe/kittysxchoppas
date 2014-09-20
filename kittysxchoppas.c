@@ -3065,7 +3065,7 @@ create_ui (PlaybackApp * app)
     app->deinterlace_checkbox = gtk_check_button_new_with_label ("Deinterlace");
     app->soft_colorbalance_checkbox =
         gtk_check_button_new_with_label ("Soft Colorbalance");
-    app->mute_checkbox = gtk_check_button_new_with_label ("Mute");
+    app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
     volume_label = gtk_label_new ("Volume");
     app->volume_spinbutton = gtk_spin_button_new_with_range (0, 10.0, 0.1);
 
