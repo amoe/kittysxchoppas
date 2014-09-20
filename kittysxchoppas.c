@@ -2624,8 +2624,8 @@ create_ui (PlaybackApp * app)
   app->marker_b_display = gtk_label_new(NULL);
   update_marker_labels(app);
 
-  back_frame_button = gtk_button_new_with_label("Seek back frame");
-  forward_frame_button = gtk_button_new_with_label("Seek forward frame");
+  back_frame_button = gtk_button_new_with_mnemonic("Seek _back frame");
+  forward_frame_button = gtk_button_new_with_mnemonic("Seek _forward frame");
 
   app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
   
