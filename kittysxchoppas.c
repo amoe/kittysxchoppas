@@ -93,6 +93,14 @@ typedef enum
 
 #define N_GRAD 1000.0
 
+struct timestamp {
+  long hours;
+  long minutes;
+  long seconds;
+  long fractional_seconds;
+};
+
+
 /* we keep an array of the visualisation entries so that we can easily switch
  * with the combo box index. */
 typedef struct
@@ -235,6 +243,9 @@ static void
 seek_back_frame_cb (GtkButton * button, PlaybackApp * app);
 static void
 seek_forward_frame_cb (GtkButton * button, PlaybackApp * app);
+
+struct timestamp convert_ns_value(long ns_value, int precision);
+
 
 
 /* pipeline construction */
@@ -3586,17 +3597,27 @@ static gchar *generate_cut_command(
 
 
 static void update_marker_labels(PlaybackApp *app) {
-  // use correct format
-    gchar *start_point_text = g_strdup_printf("%ld", app->marker_a_position);
-    gchar *end_point_text = g_strdup_printf("%ld", app->marker_b_position);
+    // use correct format
+  struct timestamp start = convert_ns_value(app->marker_a_position, 3);
+  struct timestamp end = convert_ns_value(app->marker_b_position, 3);
+
+  const char *timestamp_format = "%02ld:%02ld:%02ld.%ld";
+  
+  gchar *start_point_text = g_strdup_printf(
+					    timestamp_format, start.hours, start.minutes, start.seconds, start.fractional_seconds);
+    gchar *end_point_text = g_strdup_printf(timestamp_format,
+					    end.hours,
+					    end.minutes,
+					    end.fractional_seconds);
     
     gtk_label_set_text(GTK_LABEL(app->marker_a_display), start_point_text);
     gtk_label_set_text(GTK_LABEL(app->marker_b_display), end_point_text);
     
     g_free(start_point_text);
     g_free(end_point_text);
-
 }
+
+
 
 static void
 seek_forward_frame_cb (GtkButton *button, PlaybackApp * app) {
@@ -3647,3 +3668,26 @@ seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
     gtk_widget_grab_focus(app->seek_scale);
 
 }
+
+
+struct timestamp convert_ns_value(long ns_value, int precision) {
+  struct timestamp ret;
+
+  long minutes = GST_SECOND * 60;
+  long hours = minutes * 60;
+
+  long remainder = ns_value;
+  
+  ret.hours = ns_value / hours;
+  remainder -= ret.hours * hours;
+  ret.minutes = remainder / minutes;
+  remainder -= ret.minutes * minutes;
+  ret.seconds = remainder / GST_SECOND;
+  remainder -= ret.seconds * GST_SECOND;
+  
+  double fractional_seconds = remainder / (double) GST_SECOND;
+  ret.fractional_seconds = fractional_seconds * pow(10, precision);
+  
+  return ret;
+}
+
