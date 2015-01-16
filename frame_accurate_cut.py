@@ -10,14 +10,15 @@ import tempfile
 
 class PythonScript(object):
     def run(self, args):
-        if len(args) != 3:
-            raise Exception("usage: START-POINT END-POINT VIDEO-PATH")
+        if len(args) != 4:
+            raise Exception("usage: START-POINT END-POINT INPUT-PATH OUTPUT-PATH, all values in seconds")
         
         start_point = float(args[0])
         end_point = float(args[1])
-        path = args[2]
+        input_path = args[2]
+        output_path = args[3]
         
-        data = self.ffprobe("-show_frames", path)
+        data = self.ffprobe("-show_frames", input_path)
         keyframes = self.get_keyframes(data['frames'])
 
         kf_start = self.find_kf_start(start_point, keyframes)
@@ -25,6 +26,8 @@ class PythonScript(object):
 
         print "keyframe start =", kf_start
         print "keyframe end =", kf_end
+
+        self.transcode(input_path, output_path, kf_start, kf_end)
             
             
     def ffprobe(self, format_option, path):
@@ -38,7 +41,7 @@ class PythonScript(object):
         )
 
     def get_keyframes(self, data):
-        return [f for f in data if f['key_frame'] == 1]
+        return [f for f in data if f['key_frame'] == 1 and f['media_type'] == 'video']
         
     def find_kf_start(self, point, data):
         for idx, val in enumerate(data):
@@ -52,7 +55,16 @@ class PythonScript(object):
                 # Horrible bug when idx is really 0
                return val['pkt_dts_time']
 
+
+    # Need to specify -ss before file here otherwise it acts as non-frame acccurate
+    def transcode(self, input_file, output_file, start_time, end_time):
+        cmd = ["ffmpeg", "-fflags", "+genpts", "-ss", str(start_time), "-i", input_file, "-to", str(end_time), "-acodec", "copy",
+              "-vcodec", "copy", output_file]
+        print ' '.join(cmd)
         
+        subprocess.check_call(cmd)
+
+               
 if __name__ == "__main__":
     obj = PythonScript()
     obj.run(sys.argv[1:])
