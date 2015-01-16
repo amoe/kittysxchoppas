@@ -8,10 +8,23 @@ import subprocess
 
 class PythonScript(object):
     def run(self, args):
-        for path in args:
-#            pprint.pprint(self.ffprobe("-show_format", path))
+        width, height = self.scan_for_resolution(args)
+        print "Chosen dimensions: %dx%d" % (width, height)
+        
+
+    def scan_for_resolution(self, paths):
+        min_height = float('inf')
+        min_width = float('inf')
+        
+        for path in paths:
             width, height = self.get_dimensions(path)
-            print "%dx%d" % (width, height)
+            if width < min_width:
+                min_width = width
+
+            if height < min_height:
+                min_height = height
+
+        return min_width, min_height
 
     def get_dimensions(self, path):
             stream_info = self.ffprobe("-show_streams", path)
