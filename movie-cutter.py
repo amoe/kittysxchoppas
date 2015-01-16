@@ -55,15 +55,17 @@ class MovieCutter(object):
                 )
 
                 cut_number += 1
-
+                
+    # Delegate to the frame accurate cutter...
     def transcode(self, input_file, output_file, start_time, end_time):
-        cmd = ["ffmpeg", "-fflags", "+genpts", "-i", input_file, "-ss", str(start_time), "-to", str(end_time), "-acodec", "copy",
-              "-vcodec", "copy", output_file]
+        cmd = [
+            "/usr/local/bin/frame-accurate-cut", str(start_time), str(end_time),
+            input_file,  output_file
+        ]
         print ' '.join(cmd)
         
         subprocess.check_call(cmd)
              
-
     def str_to_seconds(self, desc):
         t = time.strptime(desc, "%M:%S")
         seconds = (t.tm_min * 60) + t.tm_sec

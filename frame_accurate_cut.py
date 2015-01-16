@@ -17,8 +17,10 @@ class PythonScript(object):
         end_point = float(args[1])
         input_path = args[2]
         output_path = args[3]
-        
+
+        print "Generating frame list..."
         data = self.ffprobe("-show_frames", input_path)
+        print "Locating correct keyframes..."
         keyframes = self.get_keyframes(data['frames'])
 
         kf_start = self.find_kf_start(start_point, keyframes)
@@ -47,18 +49,19 @@ class PythonScript(object):
         for idx, val in enumerate(data):
             if float(val['pkt_dts_time']) > point:
                 # Horrible bug when idx is really 0
-               return data[idx - 1]['pkt_dts_time']
+               return float(data[idx - 1]['pkt_dts_time'])
                     
     def find_kf_end(self, point, data):
         for idx, val in enumerate(data):
             if float(val['pkt_dts_time']) > point:
                 # Horrible bug when idx is really 0
-               return val['pkt_dts_time']
+               return float(val['pkt_dts_time'])
 
 
     # Need to specify -ss before file here otherwise it acts as non-frame acccurate
     def transcode(self, input_file, output_file, start_time, end_time):
-        cmd = ["ffmpeg", "-fflags", "+genpts", "-ss", str(start_time), "-i", input_file, "-to", str(end_time), "-acodec", "copy",
+        duration = end_time - start_time
+        cmd = ["ffmpeg", "-fflags", "+genpts", "-ss", str(start_time), "-i", input_file, "-t", str(duration), "-acodec", "copy",
               "-vcodec", "copy", output_file]
         print ' '.join(cmd)
         
