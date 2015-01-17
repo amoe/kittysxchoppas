@@ -9,11 +9,11 @@ import tempfile
 import sqlite3
 import os
 
-CACHE_DATABASE_PATH = "~/.frame_accurate_cut.sqlite"
+CACHE_DATABASE_PATH = "~/keyframe_snap_cut.sqlite"
 
 QRY_FILE = "CREATE TABLE IF NOT EXISTS file (id INTEGER PRIMARY KEY, path VARCHAR(4096), mtime BIGINT);"
 
-class PythonScript(object):
+class KeyframeSnapCut(object):
     def run(self, args):
         if len(args) != 4:
             raise Exception("usage: START-POINT END-POINT INPUT-PATH OUTPUT-PATH, all values in seconds")
@@ -144,7 +144,8 @@ class PythonScript(object):
                return val
 
 
-    # Need to specify -ss before file here otherwise it acts as non-frame acccurate
+    # Need to specify -ss before file here otherwise it doesn't snap to
+    # keyframes
     def transcode(self, input_file, output_file, start_time, end_time):
         duration = end_time - start_time
         cmd = ["ffmpeg", "-y", "-fflags", "+genpts", "-ss", str(start_time), "-i", input_file, "-t", str(duration), "-acodec", "copy",
