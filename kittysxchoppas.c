@@ -206,7 +206,9 @@ typedef struct
   gint64 marker_b_position;
   guint8 number_cuts;
   GtkWidget *marker_a_display, *marker_b_display;
-
+  GtkWidget *back_ten_button, *forward_ten_button;
+  GtkWidget *frame_accurate_checkbox;
+  
 } PlaybackApp;
 
 static void clear_streams (PlaybackApp * app);
@@ -226,7 +228,11 @@ static void ringbuffer_maxsize_activate_cb (GtkEntry * entry,
 static void connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app);
 static void av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app);
 static void subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static gchar *generate_cut_command(
+static gchar *generate_frame_accurate_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+);
+static gchar *generate_keyframe_cut_command(
     char *input_path, char *output_path, double start_position,
     double end_position
 );
@@ -243,11 +249,8 @@ static void
 seek_back_frame_cb (GtkButton * button, PlaybackApp * app);
 static void
 seek_forward_frame_cb (GtkButton * button, PlaybackApp * app);
-
 static void
-seek_back_ten_cb (GtkButton * button, PlaybackApp * app);
-static void
-seek_forward_ten_cb (GtkButton * button, PlaybackApp * app);
+seek_ten_cb (GtkButton * button, PlaybackApp * app);
 
 
 struct timestamp convert_ns_value(long ns_value, int precision);
@@ -2583,7 +2586,7 @@ create_ui (PlaybackApp * app)
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
   GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button,
-    *back_frame_button, *forward_frame_button, *back_ten_button, *forward_ten_button;
+    *back_frame_button, *forward_frame_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2630,10 +2633,11 @@ create_ui (PlaybackApp * app)
   app->marker_b_display = gtk_label_new(NULL);
   update_marker_labels(app);
 
-  back_frame_button = gtk_button_new_with_mnemonic("Seek _back frame");
-  forward_frame_button = gtk_button_new_with_mnemonic("Seek _forward frame");
-  back_ten_button = gtk_button_new_with_mnemonic("Back 10s");
-  forward_ten_button = gtk_button_new_with_mnemonic("Forward 10s");
+  back_frame_button = gtk_button_new_with_mnemonic("Seek back frame");
+  forward_frame_button = gtk_button_new_with_mnemonic("Seek forward frame");
+  app->back_ten_button = gtk_button_new_with_mnemonic("_Back 10s");
+  app->forward_ten_button = gtk_button_new_with_mnemonic("_Forward 10s");
+  app->frame_accurate_checkbox = gtk_check_button_new_with_mnemonic("Frame accurate");
 
   
   app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
@@ -3126,6 +3130,9 @@ create_ui (PlaybackApp * app)
         FALSE);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON
         (app->soft_colorbalance_checkbox), TRUE);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (app->frame_accurate_checkbox),
+				  FALSE);   // Keyframe snap by default
+
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (app->mute_checkbox),
         FALSE);
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (app->volume_spinbutton), 1.0);
@@ -3289,8 +3296,9 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), back_frame_button, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), forward_frame_button, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (hbox), back_ten_button, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (hbox), forward_ten_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), app->back_ten_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), app->forward_ten_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), app->frame_accurate_checkbox, FALSE, FALSE, 2);
 
     gtk_box_pack_start (GTK_BOX (hbox), app->mute_checkbox, FALSE, FALSE, 2);
 
@@ -3323,8 +3331,8 @@ create_ui (PlaybackApp * app)
       app);
   g_signal_connect (G_OBJECT (forward_frame_button), "clicked", G_CALLBACK (seek_forward_frame_cb), app);
 
-  g_signal_connect (G_OBJECT (back_ten_button), "clicked", G_CALLBACK (seek_back_ten_cb), app);      
-  g_signal_connect (G_OBJECT (forward_ten_button), "clicked", G_CALLBACK (seek_forward_ten_cb), app);
+  g_signal_connect (G_OBJECT (app->back_ten_button), "clicked", G_CALLBACK (seek_ten_cb), app);      
+  g_signal_connect (G_OBJECT (app->forward_ten_button), "clicked", G_CALLBACK (seek_ten_cb), app);
 		    
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
@@ -3544,6 +3552,8 @@ cut_cb (GtkButton * button, PlaybackApp * app)
   printf("CUTTING FROM %" G_GINT64_FORMAT " TO %" G_GINT64_FORMAT "\n",
 	 app->marker_a_position, app->marker_b_position);
 
+  gboolean is_frame_accurate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(app->frame_accurate_checkbox));
+
   char *input_path = app->current_path->data;
   char *output_path = get_output_path(app);
 
@@ -3551,10 +3561,17 @@ cut_cb (GtkButton * button, PlaybackApp * app)
   
   double second_start = app->marker_a_position / seconds_conversion;
   double second_end = app->marker_b_position / seconds_conversion;
-  
-  char *command = generate_cut_command(
+
+  char *command;
+  if (is_frame_accurate) {
+    command = generate_frame_accurate_cut_command(
+        input_path, output_path, second_start, second_end
+    );
+  } else {
+    command = generate_keyframe_cut_command(
      input_path, output_path, second_start, second_end
-  );
+    );
+  }
 
   printf("Will run command: '%s'\n", command);
   int ret = system(command);
@@ -3588,8 +3605,31 @@ static gchar *get_output_path(PlaybackApp *app) {
 }
 
 
+static gchar *generate_frame_accurate_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+) {
+     char *command_template
+      = "ffmpeg -fflags +genpts -y -i %s -ss %.3f -to %.3f -codec copy %s";
 
-static gchar *generate_cut_command(
+ 
+     char *quoted_input_path = g_shell_quote(input_path);
+     char *quoted_output_path = g_shell_quote(output_path);
+ 
+     gchar *command = g_strdup_printf(
+      command_template, start_position, end_position, quoted_input_path,
+      quoted_output_path
+      );
+    
+    g_free(quoted_input_path);
+    g_free(quoted_output_path);
+
+    return command;
+}
+
+
+
+static gchar *generate_keyframe_cut_command(
     char *input_path, char *output_path, double start_position,
     double end_position
 ) {
@@ -3684,9 +3724,8 @@ seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
 
 }
 
-
 static void
-seek_forward_ten_cb (GtkButton *button, PlaybackApp * app) {
+seek_ten_cb (GtkButton *button, PlaybackApp * app) {
   gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
 
   
@@ -3701,6 +3740,11 @@ seek_forward_ten_cb (GtkButton *button, PlaybackApp * app) {
   double one_second = (nanosecond * n_grad) / duration;
 
   double increment = one_second * 10;
+
+  if (button == GTK_BUTTON(app->back_ten_button))
+    increment *= -1;
+  else
+    increment *= +1;
 
   printf("increment is %lf\n", increment);
   
@@ -3710,31 +3754,6 @@ seek_forward_ten_cb (GtkButton *button, PlaybackApp * app) {
 
 }
 
-static void
-seek_back_ten_cb (GtkButton *button, PlaybackApp * app) {
-  gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
-
-  
-  printf("nsecond is %lf\n", (double) pow(10, 9));
-  printf("n_grad is %lf\n", (double) N_GRAD);
-  printf("duration is %lf\n", (double) app->duration);
-
-  double nanosecond = pow(10, 9);
-  double n_grad = N_GRAD;
-  double duration = app->duration;
-
-  double one_second = (nanosecond * n_grad) / duration;
-
-  double increment = one_second * 10;
-
-  printf("increment is %lf\n", increment);
-  
-  set_scale(app, current_value - increment);
-  seek_cb(GTK_RANGE(app->seek_scale), app);
-    gtk_widget_grab_focus(app->seek_scale);
-
-}
- 
 
 struct timestamp convert_ns_value(long ns_value, int precision) {
   struct timestamp ret;
