@@ -9,7 +9,7 @@ import tempfile
 import sqlite3
 import os
 
-CACHE_DATABASE_PATH = "~/keyframe_snap_cut.sqlite"
+CACHE_DATABASE_PATH = "~/.keyframe_snap_cut.sqlite"
 
 QRY_FILE = "CREATE TABLE IF NOT EXISTS file (id INTEGER PRIMARY KEY, path VARCHAR(4096), mtime BIGINT);"
 
@@ -122,7 +122,7 @@ class KeyframeSnapCut(object):
         return json.loads(
             subprocess.check_output(
                 [
-                    "/usr/local/bin/ffprobe", "-v", "quiet", "-print_format",
+                    "ffprobe", "-v", "quiet", "-print_format",
                     "json", "-skip_frame", "nokey", format_option, path
                 ]
             )
@@ -156,6 +156,6 @@ class KeyframeSnapCut(object):
 
                
 if __name__ == "__main__":
-    obj = PythonScript()
+    obj = KeyframeSnapCut()
     obj.run(sys.argv[1:])
         
