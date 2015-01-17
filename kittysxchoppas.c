@@ -3634,7 +3634,7 @@ static gchar *generate_keyframe_cut_command(
     double end_position
 ) {
     char *command_template
-      = "frame-accurate-cut %.3f %.3f %s %s";
+      = "keyframe-snap-cut %.3f %.3f %s %s";
 
     char *quoted_input_path = g_shell_quote(input_path);
     char *quoted_output_path = g_shell_quote(output_path);
