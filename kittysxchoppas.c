@@ -244,6 +244,12 @@ seek_back_frame_cb (GtkButton * button, PlaybackApp * app);
 static void
 seek_forward_frame_cb (GtkButton * button, PlaybackApp * app);
 
+static void
+seek_back_ten_cb (GtkButton * button, PlaybackApp * app);
+static void
+seek_forward_ten_cb (GtkButton * button, PlaybackApp * app);
+
+
 struct timestamp convert_ns_value(long ns_value, int precision);
 
 
@@ -2577,7 +2583,7 @@ create_ui (PlaybackApp * app)
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
   GtkWidget *play_button, *pause_button, *stop_button;
   GtkWidget *set_marker_a_button, *set_marker_b_button, *cut_button,
-    *back_frame_button, *forward_frame_button;
+    *back_frame_button, *forward_frame_button, *back_ten_button, *forward_ten_button;
   GtkAdjustment *adjustment;
 
   /* initialize gui elements ... */
@@ -2626,7 +2632,10 @@ create_ui (PlaybackApp * app)
 
   back_frame_button = gtk_button_new_with_mnemonic("Seek _back frame");
   forward_frame_button = gtk_button_new_with_mnemonic("Seek _forward frame");
+  back_ten_button = gtk_button_new_with_mnemonic("Back 10s");
+  forward_ten_button = gtk_button_new_with_mnemonic("Forward 10s");
 
+  
   app->mute_checkbox = gtk_check_button_new_with_mnemonic ("_Mute");
   
   /* seek expander */
@@ -3280,6 +3289,9 @@ create_ui (PlaybackApp * app)
   gtk_box_pack_start (GTK_BOX (hbox), app->marker_b_display, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), back_frame_button, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), forward_frame_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), back_ten_button, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (hbox), forward_ten_button, FALSE, FALSE, 2);
+
     gtk_box_pack_start (GTK_BOX (hbox), app->mute_checkbox, FALSE, FALSE, 2);
 
 
@@ -3309,8 +3321,11 @@ create_ui (PlaybackApp * app)
       app);
   g_signal_connect (G_OBJECT (back_frame_button), "clicked", G_CALLBACK (seek_back_frame_cb),
       app);
-  g_signal_connect (G_OBJECT (forward_frame_button), "clicked", G_CALLBACK (seek_forward_frame_cb),
-      app);
+  g_signal_connect (G_OBJECT (forward_frame_button), "clicked", G_CALLBACK (seek_forward_frame_cb), app);
+
+  g_signal_connect (G_OBJECT (back_ten_button), "clicked", G_CALLBACK (seek_back_ten_cb), app);      
+  g_signal_connect (G_OBJECT (forward_ten_button), "clicked", G_CALLBACK (seek_forward_ten_cb), app);
+		    
 
   g_signal_connect (G_OBJECT (app->window), "delete-event",
       G_CALLBACK (delete_event_cb), app);
@@ -3579,13 +3594,13 @@ static gchar *generate_cut_command(
     double end_position
 ) {
     char *command_template
-      = "ffmpeg -fflags +genpts -y -i %s -ss %.3f -to %.3f -codec copy %s";
+      = "frame-accurate-cut %.3f %.3f %s %s";
 
     char *quoted_input_path = g_shell_quote(input_path);
     char *quoted_output_path = g_shell_quote(output_path);
 
     gchar *command = g_strdup_printf(
-        command_template, quoted_input_path, start_position, end_position,
+        command_template, start_position, end_position, quoted_input_path, 
         quoted_output_path
     );
     
@@ -3670,6 +3685,57 @@ seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
 }
 
 
+static void
+seek_forward_ten_cb (GtkButton *button, PlaybackApp * app) {
+  gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
+
+  
+  printf("nsecond is %lf\n", (double) pow(10, 9));
+  printf("n_grad is %lf\n", (double) N_GRAD);
+  printf("duration is %lf\n", (double) app->duration);
+
+  double nanosecond = pow(10, 9);
+  double n_grad = N_GRAD;
+  double duration = app->duration;
+
+  double one_second = (nanosecond * n_grad) / duration;
+
+  double increment = one_second * 10;
+
+  printf("increment is %lf\n", increment);
+  
+  set_scale(app, current_value + increment);
+  seek_cb(GTK_RANGE(app->seek_scale), app);
+    gtk_widget_grab_focus(app->seek_scale);
+
+}
+
+static void
+seek_back_ten_cb (GtkButton *button, PlaybackApp * app) {
+  gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
+
+  
+  printf("nsecond is %lf\n", (double) pow(10, 9));
+  printf("n_grad is %lf\n", (double) N_GRAD);
+  printf("duration is %lf\n", (double) app->duration);
+
+  double nanosecond = pow(10, 9);
+  double n_grad = N_GRAD;
+  double duration = app->duration;
+
+  double one_second = (nanosecond * n_grad) / duration;
+
+  double increment = one_second * 10;
+
+  printf("increment is %lf\n", increment);
+  
+  set_scale(app, current_value - increment);
+  seek_cb(GTK_RANGE(app->seek_scale), app);
+    gtk_widget_grab_focus(app->seek_scale);
+
+}
+ 
+
 struct timestamp convert_ns_value(long ns_value, int precision) {
   struct timestamp ret;
 
@@ -3690,4 +3756,3 @@ struct timestamp convert_ns_value(long ns_value, int precision) {
   
   return ret;
 }
-
