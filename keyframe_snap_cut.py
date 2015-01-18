@@ -144,6 +144,9 @@ class KeyframeSnapCut(object):
                return val
 
 
+        return data[-1]   # last keyframe
+
+
     # Need to specify -ss before file here otherwise it doesn't snap to
     # keyframes
     def transcode(self, input_file, output_file, start_time, end_time):

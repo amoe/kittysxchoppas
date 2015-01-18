@@ -59,7 +59,7 @@ class MovieCutter(object):
     # Delegate to the frame accurate cutter...
     def transcode(self, input_file, output_file, start_time, end_time):
         cmd = [
-            "/usr/local/bin/frame-accurate-cut", str(start_time), str(end_time),
+            "/usr/local/bin/keyframe-snap-cut", str(start_time), str(end_time),
             input_file,  output_file
         ]
         print ' '.join(cmd)
