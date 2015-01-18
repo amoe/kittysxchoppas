@@ -128,10 +128,17 @@ class KeyframeSnapCut(object):
             )
         )
 
+    # sometimes packets won't contain pkt_dts_time for weird reasons
     def convert_ffprobe_keyframes(self, data):
-        return [float(f['pkt_dts_time'])
-                for f in data
-                if f['key_frame'] == 1 and f['media_type'] == 'video']
+        result = []
+        time_key = 'pkt_dts_time'
+        
+        for f in data:
+            if f['key_frame'] == 1 and f['media_type'] == 'video' \
+              and time_key in f:
+                result.append(float(f[time_key]))
+
+        return result
         
     def find_kf_start(self, point, data):
         for idx, val in enumerate(data):
