@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import locale
 import sys
 import argparse
 import pprint
@@ -18,6 +19,7 @@ class KeyframeSnapCut(object):
         if len(args) != 4:
             raise Exception("usage: START-POINT END-POINT INPUT-PATH OUTPUT-PATH, all values in seconds")
 
+        locale.setlocale(locale.LC_ALL, '')            
 
         self.conn = sqlite3.connect(os.path.expanduser(CACHE_DATABASE_PATH))
         self.cursor = self.conn.cursor()
@@ -42,15 +44,24 @@ class KeyframeSnapCut(object):
         self.transcode(input_path, output_path, kf_start, kf_end)
 
     def get_keyframes(self, input_path):
-
         self.cursor.execute(QRY_FILE)
         self.cursor.execute("CREATE TABLE IF NOT EXISTS keyframe (file_id INTEGER, time FLOAT)");
 
         abspath = os.path.abspath(input_path)
+
+        try:
+            u_abspath = abspath.decode(locale.getpreferredencoding())
+        except UnicodeDecodeError, e:
+            raise Exception("filename has an encoding error, please fix manually")
+
         
-        self.cursor.execute("SELECT f.id, f.mtime FROM file f WHERE f.path = ?", (abspath,))
+        # sqlite needs unicode strings
+        self.cursor.execute(
+            "SELECT f.id, f.mtime FROM file f WHERE f.path = ?",
+            (u_abspath,)
+        )
         result = self.cursor.fetchone()
-        current_mtime = os.path.getmtime(input_path)
+        current_mtime = os.path.getmtime(u_abspath)
 
         if result:
             if current_mtime != result[1]:
