@@ -6,6 +6,7 @@ import pprint
 import json
 import subprocess
 import tempfile
+import os
 
 # We need to use this on the chunks otherwise shit breaks.
 
@@ -28,20 +29,50 @@ import tempfile
 
 class PythonScript(object):
     def run(self, args):
-        width, height = self.scan_for_resolution(args)
+        output_path = args[0]
+        input_paths = args[1:]
+        
+        width, height = self.scan_for_resolution(input_paths)
         print "Chosen dimensions: %dx%d" % (width, height)
-
-        for path in args:
+        
+        tempfiles = []
+        
+        for path in input_paths:
             tmp = tempfile.mkstemp(
-                suffix=".mkv", prefix="join_with_transitions-"
+                suffix=".mkv", prefix="scaled-"
             )
             scale_arg = "scale=%d:%d" % (width, height)
             subprocess.check_call([
-                "/usr/local/bin/ffmpeg", "-y", "-fflags", "+genpts", "-i",
+                "ffmpeg", "-y", "-fflags", "+genpts", "-i",
                 path, "-vf", scale_arg, tmp[1]
             ])
+            tempfiles.append(tmp[1])
+
+        self.join_videos(tempfiles, output_path)
+
+        for path in tempfiles:
+            os.remove(path)
+
+    def join_videos(self, paths, output):
+        print repr(paths)
+        with tempfile.NamedTemporaryFile(
+            suffix=".lst", prefix="concat_list-", delete=False
+        ) as concat_list:
+            for path in paths:
+                print repr(path)
+                concat_list.write("file '%s'\n" % path)
+
+            concat_list_path = concat_list.name
+
+        subprocess.check_call([
+            "ffmpeg", "-f", "concat", "-i", concat_list_path,
+            "-c", "copy", output
+        ])
+
+        os.remove(concat_list_path)
             
 
+            
     def scan_for_resolution(self, paths):
         min_height = float('inf')
         min_width = float('inf')
