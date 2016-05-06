@@ -1,7 +1,10 @@
 #! /usr/bin/env python3
 
-import locale
 import sys
+if sys.version_info[0] < 3:
+    raise "Must be using Python 3"
+
+import locale
 import argparse
 import pprint
 import json
@@ -9,6 +12,7 @@ import subprocess
 import tempfile
 import sqlite3
 import os
+
 
 CACHE_DATABASE_PATH = "~/.keyframe_snap_cut.sqlite"
 
