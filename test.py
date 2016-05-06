@@ -1,5 +1,7 @@
-# tests
+#! /usr/bin/python3
 # coding=UTF-8
+
+# main test suite
 
 import unittest
 import keyframe_snap_cut
