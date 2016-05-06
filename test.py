@@ -23,8 +23,32 @@ class TestThings(unittest.TestCase):
     def test_weird_filenames(self):
         obj = keyframe_snap_cut.KeyframeSnapCut()
         result = obj.get_keyframes(self.weird_filename)
-        pprint.pprint(result)
-        self.assertEqual(2+2, 4)
+        expected_result = [
+            0.0,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            6.0,
+            6.5,
+            7.0,
+            7.5,
+            8.0,
+            8.5,
+            9.0,
+            9.5,
+            10.0,
+            10.5
+        ]            
+      
+        self.assertEqual(result, expected_result)
 
 
 if __name__ == "__main__":
