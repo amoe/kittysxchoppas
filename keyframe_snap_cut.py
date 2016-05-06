@@ -15,15 +15,15 @@ CACHE_DATABASE_PATH = "~/.keyframe_snap_cut.sqlite"
 QRY_FILE = "CREATE TABLE IF NOT EXISTS file (id INTEGER PRIMARY KEY, path VARCHAR(4096), mtime BIGINT);"
 
 class KeyframeSnapCut(object):
+    def __init__(self):
+        self.conn = sqlite3.connect(os.path.expanduser(CACHE_DATABASE_PATH))
+        self.cursor = self.conn.cursor()
+
     def run(self, args):
         if len(args) != 4:
             raise Exception("usage: START-POINT END-POINT INPUT-PATH OUTPUT-PATH, all values in seconds")
 
         locale.setlocale(locale.LC_ALL, '')            
-
-        self.conn = sqlite3.connect(os.path.expanduser(CACHE_DATABASE_PATH))
-        self.cursor = self.conn.cursor()
-
         
         start_point = float(args[0])
         end_point = float(args[1])
@@ -155,6 +155,8 @@ class KeyframeSnapCut(object):
         for idx, val in enumerate(data):
             if val > point:
                return data[max(idx - 1, 0)]
+
+        return data[-1]   # if we specify a value that's off the end
                     
     def find_kf_end(self, point, data):
         for idx, val in enumerate(data):

@@ -8,6 +8,16 @@ import subprocess
 import tempfile
 import os
 
+# make sure we set aspect
+# XXX: QUITE OFTEN YOU HAVE TO REENCODE TO SAME CODEC BEFORE YOU CAN JOIN AT ALL
+# That is,
+# even if all files have the same codec,
+# but some have different aspect + resolution,
+# you need to rescale them ALL to the correct values
+# if you just rescale ONE to match the majority resolution,
+# it will end up in a different codec,
+# and then joining them will fail.
+
 # We need to use this on the chunks otherwise shit breaks.
 
 # http://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
@@ -32,6 +42,14 @@ class PythonScript(object):
         output_path = args[0]
         input_paths = args[1:]
         
+        # XXX need to scan for aspect.
+        # or maybe best to just specify a resolution
+        preset = "ultrafast"
+        aspect = "16:9"
+        sample_rate = 44100
+        quality = 4
+        channels = 2
+
         width, height = self.scan_for_resolution(input_paths)
         print "Chosen dimensions: %dx%d" % (width, height)
         
@@ -44,7 +62,11 @@ class PythonScript(object):
             scale_arg = "scale=%d:%d" % (width, height)
             subprocess.check_call([
                 "ffmpeg", "-y", "-fflags", "+genpts", "-i",
-                path, "-vf", scale_arg, tmp[1]
+                path, "-preset", preset, "-vf", scale_arg,
+                "-ar", str(sample_rate),
+                "-aq", str(quality),
+                "-ac", str(channels),
+                "-aspect", aspect, tmp[1]
             ])
             tempfiles.append(tmp[1])
 
@@ -70,8 +92,6 @@ class PythonScript(object):
         ])
 
         os.remove(concat_list_path)
-            
-
             
     def scan_for_resolution(self, paths):
         min_height = float('inf')
