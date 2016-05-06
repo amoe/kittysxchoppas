@@ -129,7 +129,7 @@ class KeyframeSnapCut(object):
                     "ffprobe", "-v", "quiet", "-print_format",
                     "json", "-skip_frame", "nokey", format_option, path
                 ]
-            )
+            ).decode(locale.getpreferredencoding())
         )
 
     # sometimes packets won't contain pkt_dts_time for weird reasons
