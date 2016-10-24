@@ -9,3 +9,5 @@ kittysxchoppas: kittysxchoppas.c
 install: kittysxchoppas
 	cp -v kittysxchoppas $(bindir)
 	chmod +x $(bindir)/kittysxchoppas
+	cp -v keyframe_snap_cut.py $(bindir)/keyframe-snap-cut
+	chmod +x $(bindir)/keyframe-snap-cut
