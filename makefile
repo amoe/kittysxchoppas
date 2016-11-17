@@ -11,3 +11,5 @@ install: kittysxchoppas
 	chmod +x $(bindir)/kittysxchoppas
 	cp -v keyframe_snap_cut.py $(bindir)/keyframe-snap-cut
 	chmod +x $(bindir)/keyframe-snap-cut
+	cp -v movie_cutter.py $(bindir)/movie-cutter
+	chmod +x $(bindir)/movie-cutter
