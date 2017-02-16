@@ -87,7 +87,7 @@ class PythonScript(object):
             concat_list_path = concat_list.name
 
         subprocess.check_call([
-            "ffmpeg", "-f", "concat", "-i", concat_list_path,
+            "ffmpeg", "-f", "concat", "-safe", "0", "-i", concat_list_path,
             "-c", "copy", output
         ])
 
@@ -129,7 +129,7 @@ class PythonScript(object):
         return json.loads(
             subprocess.check_output(
                 [
-                    "/usr/local/bin/ffprobe", "-v", "quiet", "-print_format",
+                    "/usr/bin/ffprobe", "-v", "quiet", "-print_format",
                     "json", format_option, path
                 ]
             )
