@@ -2,7 +2,7 @@
 
 import sys
 import logging
-from logging import debug, info
+from logging import debug, info, warn
 import argparse
 import os
 import subprocess
@@ -44,7 +44,8 @@ class MovieCutter(object):
                 end_time = seconds_val + 10
 
                 if end_time > duration:
-                    raise Exception("end time would run off duration")
+                    warn("end time would run off duration, using real end")
+                    end_time = duration
                 
                 output_path = os.path.join(
                     output_directory_path, "output-%d.mkv" % cut_number
