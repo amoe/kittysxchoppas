@@ -7,11 +7,11 @@ if sys.version_info[0] < 3:
 import locale
 import argparse
 import pprint
-import json
 import subprocess
 import tempfile
 import sqlite3
 import os
+import ffprobe
 
 
 CACHE_DATABASE_PATH = "~/.keyframe_snap_cut.sqlite"
@@ -23,7 +23,7 @@ class KeyframeSnapCut(object):
         self.conn = sqlite3.connect(os.path.expanduser(CACHE_DATABASE_PATH))
         self.cursor = self.conn.cursor()
 
-    def run(self, args):
+    def run_from_cli(self, args):
         if len(args) != 4:
             raise Exception("usage: START-POINT END-POINT INPUT-PATH OUTPUT-PATH, all values in seconds")
 
@@ -34,6 +34,9 @@ class KeyframeSnapCut(object):
         input_path = args[2]
         output_path = args[3]
 
+        self.run(start_point, end_point, input_path, output_path)
+
+    def run(self, start_point, end_point, input_path, output_path):
         keyframes = self.get_keyframes(input_path)
 
         if not keyframes:
@@ -120,21 +123,10 @@ class KeyframeSnapCut(object):
         
     def probe_frames(self, input_path):
         print("Generating frame list...")
-        data = self.ffprobe("-show_frames", input_path)
+        data = ffprobe.ffprobe("-show_frames", input_path)
         print("Locating correct keyframes...")
         keyframes = self.convert_ffprobe_keyframes(data['frames'])
         return keyframes
-
-        
-    def ffprobe(self, format_option, path):
-        return json.loads(
-            subprocess.check_output(
-                [
-                    "ffprobe", "-v", "quiet", "-print_format",
-                    "json", "-skip_frame", "nokey", format_option, path
-                ]
-            ).decode(locale.getpreferredencoding())
-        )
 
     # sometimes packets won't contain pkt_dts_time for weird reasons
     def convert_ffprobe_keyframes(self, data):
@@ -160,7 +152,6 @@ class KeyframeSnapCut(object):
             if val > point:
                return val
 
-
         return data[-1]   # last keyframe
 
 
@@ -177,5 +168,5 @@ class KeyframeSnapCut(object):
                
 if __name__ == "__main__":
     obj = KeyframeSnapCut()
-    obj.run(sys.argv[1:])
+    obj.run_from_cli(sys.argv[1:])
         
