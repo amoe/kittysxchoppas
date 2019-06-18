@@ -16,4 +16,6 @@ env.Program('kittysxchoppas', ['kittysxchoppas.c'])
 
 env.Program('test', ['test.c'], LIBS=['check', 'subunit', 'rt', 'm', 'pthread'])
 
-env.Alias('install', env.Install(dir=bindir, source="kittysxchoppas"))
+install_bin = env.Install(dir=bindir, source="kittysxchoppas")
+
+env.Alias('install', [install_bin])
