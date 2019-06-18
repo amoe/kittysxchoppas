@@ -14,3 +14,10 @@ libglib2.0-dev
 libgstreamer-plugins-base1.0-dev
 libgtk-3-dev
 ffmpeg
+
+Build instructions
+------------------
+
+Get SCons 3.x or greater, probably from pip.
+
+Run `scons install` to install under `/usr/local/bin/kittysxchoppas`.
