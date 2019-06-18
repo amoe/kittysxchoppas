@@ -10,6 +10,7 @@ This is several things:
 Build deps
 ----------
 
+libglib2.0-dev
 libgstreamer-plugins-base1.0-dev
 libgtk-3-dev
 ffmpeg
