@@ -212,5 +212,25 @@ seek_ten_cb (GtkButton * button, PlaybackApp * app);
 
 struct timestamp convert_ns_value(long ns_value, int precision);
 
+void
+make_playbin_pipeline (PlaybackApp * app, const gchar * location);
+void
+make_parselaunch_pipeline (PlaybackApp * app, const gchar * description);
+
+typedef struct
+{
+  const gchar *name;
+  void (*func) (PlaybackApp * app, const gchar * location);
+}
+Pipeline;
+
+static const Pipeline pipelines[] = {
+  {"playbin", make_playbin_pipeline},
+#ifndef GST_DISABLE_PARSE
+  {"parse-launch", make_parselaunch_pipeline},
+#endif
+};
+
+
 
 #endif /* KITTYSXCHOPPAS_H */

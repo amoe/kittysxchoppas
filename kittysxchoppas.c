@@ -105,7 +105,7 @@ playbin_set_uri (GstElement * playbin, const gchar * location,
   set_uri_property (G_OBJECT (playbin), "suburi", sub_location);
 }
 
-static void
+void
 make_playbin_pipeline (PlaybackApp * app, const gchar * location)
 {
   GstElement *pipeline;
@@ -125,26 +125,12 @@ make_playbin_pipeline (PlaybackApp * app, const gchar * location)
 }
 
 #ifndef GST_DISABLE_PARSE
-static void
+void
 make_parselaunch_pipeline (PlaybackApp * app, const gchar * description)
 {
   app->pipeline = gst_parse_launch (description, NULL);
 }
 #endif
-
-typedef struct
-{
-  const gchar *name;
-  void (*func) (PlaybackApp * app, const gchar * location);
-}
-Pipeline;
-
-static const Pipeline pipelines[] = {
-  {"playbin", make_playbin_pipeline},
-#ifndef GST_DISABLE_PARSE
-  {"parse-launch", make_parselaunch_pipeline},
-#endif
-};
 
 /* ui callbacks and helpers */
 
@@ -2364,18 +2350,6 @@ av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-void
-print_usage (int argc, char **argv)
-{
-  gint i;
-
-  g_print ("usage: %s <type> <filename>\n", argv[0]);
-  g_print ("   possible types:\n");
-
-  for (i = 0; i < G_N_ELEMENTS (pipelines); i++) {
-    g_print ("     %d = %s\n", i, pipelines[i].name);
-  }
-}
 
 void
 create_ui (PlaybackApp * app)

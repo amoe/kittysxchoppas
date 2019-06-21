@@ -26,3 +26,16 @@ set_defaults (PlaybackApp * app)
   app->marker_a_position = 0;
   app->number_cuts = 0;
 }
+
+void
+print_usage (int argc, char **argv)
+{
+  gint i;
+
+  g_print ("usage: %s <type> <filename>\n", argv[0]);
+  g_print ("   possible types:\n");
+
+  for (i = 0; i < G_N_ELEMENTS (pipelines); i++) {
+    g_print ("     %d = %s\n", i, pipelines[i].name);
+  }
+}
