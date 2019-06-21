@@ -39,3 +39,37 @@ print_usage (int argc, char **argv)
     g_print ("     %d = %s\n", i, pipelines[i].name);
   }
 }
+
+/* Return GList of paths described in location string */
+GList *
+handle_wildcards (const gchar * location)
+{
+  GList *res = NULL;
+  gchar *path = g_path_get_dirname (location);
+  gchar *pattern = g_path_get_basename (location);
+  GPatternSpec *pspec = g_pattern_spec_new (pattern);
+  GDir *dir = g_dir_open (path, 0, NULL);
+  const gchar *name;
+
+  g_print ("matching %s from %s\n", pattern, path);
+
+  if (!dir) {
+    g_print ("opening directory %s failed\n", path);
+    goto out;
+  }
+
+  while ((name = g_dir_read_name (dir)) != NULL) {
+    if (g_pattern_match_string (pspec, name)) {
+      res = g_list_append (res, g_strjoin ("/", path, name, NULL));
+      g_print ("  found clip %s\n", name);
+    }
+  }
+
+  g_dir_close (dir);
+out:
+  g_pattern_spec_free (pspec);
+  g_free (pattern);
+  g_free (path);
+
+  return res;
+}
