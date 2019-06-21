@@ -12,7 +12,7 @@ pkg_config_packages = [
 env.ParseConfig("pkg-config --cflags --libs " + ' '.join(pkg_config_packages))
 env.Append(LIBS=['m'])
 
-env.Program('kittysxchoppas', ['kittysxchoppas.c'])
+env.Program('kittysxchoppas', ['kittysxchoppas.c', 'layer1.c'])
 
 env.Program('test', ['test.c'], LIBS=['check', 'subunit', 'rt', 'm', 'pthread'])
 
