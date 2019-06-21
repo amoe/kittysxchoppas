@@ -587,7 +587,7 @@ failed:
   }
 }
 
-static void
+void
 pause_cb (GtkButton * button, PlaybackApp * app)
 {
   g_mutex_lock (&app->state_mutex);
@@ -2129,7 +2129,7 @@ msg (GstBus * bus, GstMessage * message, PlaybackApp * app)
   }
 }
 
-static void
+void
 connect_bus_signals (PlaybackApp * app)
 {
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (app->pipeline));
@@ -2363,7 +2363,7 @@ av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-static void
+void
 print_usage (int argc, char **argv)
 {
   gint i;
@@ -2376,7 +2376,7 @@ print_usage (int argc, char **argv)
   }
 }
 
-static void
+void
 create_ui (PlaybackApp * app)
 {
   GtkWidget *hbox, *vbox, *seek, *playbin, *step, *navigation, *colorbalance;
@@ -3138,7 +3138,7 @@ create_ui (PlaybackApp * app)
   gtk_widget_grab_default (play_button);
 }
 
-static void
+void
 set_defaults (PlaybackApp * app)
 {
   memset (app, 0, sizeof (PlaybackApp));
@@ -3161,7 +3161,7 @@ set_defaults (PlaybackApp * app)
   app->number_cuts = 0;
 }
 
-static void
+void
 reset_app (PlaybackApp * app)
 {
   g_free (app->audiosink_str);
