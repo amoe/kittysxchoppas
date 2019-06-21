@@ -166,4 +166,50 @@ typedef struct
 } PlaybackApp;
 
 
+static void clear_streams (PlaybackApp * app);
+static void find_interface_elements (PlaybackApp * app);
+static void volume_notify_cb (GstElement * pipeline, GParamSpec * arg,
+    PlaybackApp * app);
+static void mute_notify_cb (GstElement * pipeline, GParamSpec * arg,
+    PlaybackApp * app);
+
+
+static void video_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void text_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void audio_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void buffer_size_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void buffer_duration_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void ringbuffer_maxsize_activate_cb (GtkEntry * entry,
+    PlaybackApp * app);
+static void connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static void subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app);
+static gchar *generate_frame_accurate_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+);
+static gchar *generate_keyframe_cut_command(
+    char *input_path, char *output_path, double start_position,
+    double end_position
+);
+
+static void
+set_marker_a_cb (GtkButton * button, PlaybackApp * app);
+static void
+set_marker_b_cb (GtkButton * button, PlaybackApp * app);
+static void
+cut_cb (GtkButton * button, PlaybackApp * app);
+static gchar *get_output_path(PlaybackApp *app);
+static void update_marker_labels(PlaybackApp *app);
+static void
+seek_back_frame_cb (GtkButton * button, PlaybackApp * app);
+static void
+seek_forward_frame_cb (GtkButton * button, PlaybackApp * app);
+static void
+seek_ten_cb (GtkButton * button, PlaybackApp * app);
+
+
+struct timestamp convert_ns_value(long ns_value, int precision);
+
+
 #endif /* KITTYSXCHOPPAS_H */
