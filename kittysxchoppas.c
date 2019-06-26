@@ -54,6 +54,9 @@
 #include "kittysxchoppas.h"
 #include "layer1.h"
 
+GST_DEBUG_CATEGORY_STATIC (playback_debug);
+#define GST_CAT_DEFAULT (playback_debug)
+
 /* pipeline construction */
 
 static GstElement *
@@ -898,7 +901,7 @@ soft_colorbalance_toggle_cb (GtkToggleButton * button, PlaybackApp * app)
   update_flag (app->pipeline, GST_PLAY_FLAG_SOFT_COLORBALANCE, state);
 }
 
-static void
+void
 clear_streams (PlaybackApp * app)
 {
   gint i;
@@ -1139,7 +1142,7 @@ volume_notify_idle_cb (PlaybackApp * app)
   return FALSE;
 }
 
-static void
+void
 volume_notify_cb (GstElement * pipeline, GParamSpec * arg, PlaybackApp * app)
 {
   /* Do this from the main thread */
@@ -1164,7 +1167,7 @@ mute_notify_idle_cb (PlaybackApp * app)
   return FALSE;
 }
 
-static void
+void
 mute_notify_cb (GstElement * pipeline, GParamSpec * arg, PlaybackApp * app)
 {
   /* Do this from the main thread */
@@ -1801,7 +1804,7 @@ is_valid_color_balance_element (GstElement * element)
   return have_brightness && have_contrast && have_hue && have_saturation;
 }
 
-static void
+void
 find_interface_elements (PlaybackApp * app)
 {
   GstIterator *it;
@@ -2172,7 +2175,7 @@ delete_event_cb (GtkWidget * widget, GdkEvent * event, PlaybackApp * app)
   gtk_main_quit ();
 }
 
-static void
+void
 video_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   GstElement *sink = NULL;
@@ -2186,7 +2189,7 @@ video_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
   g_object_set (app->pipeline, "video-sink", sink, NULL);
 }
 
-static void
+void
 audio_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   GstElement *sink = NULL;
@@ -2200,7 +2203,7 @@ audio_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
   g_object_set (app->pipeline, "audio-sink", sink, NULL);
 }
 
-static void
+void
 text_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   GstElement *sink = NULL;
@@ -2214,7 +2217,7 @@ text_sink_activate_cb (GtkEntry * entry, PlaybackApp * app)
   g_object_set (app->pipeline, "text-sink", sink, NULL);
 }
 
-static void
+void
 buffer_size_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;
@@ -2231,7 +2234,7 @@ buffer_size_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-static void
+void
 buffer_duration_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;
@@ -2248,7 +2251,7 @@ buffer_duration_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-static void
+void
 ringbuffer_maxsize_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;
@@ -2265,7 +2268,7 @@ ringbuffer_maxsize_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-static void
+void
 connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;
@@ -2282,7 +2285,7 @@ connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app)
   }
 }
 
-static void
+void
 subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;
@@ -2300,7 +2303,7 @@ subtitle_fontdesc_cb (GtkFontButton * button, PlaybackApp * app)
   g_object_set (app->pipeline, "subtitle-font-desc", text, NULL);
 }
 
-static void
+void
 av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app)
 {
   const gchar *text;

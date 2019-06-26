@@ -19,7 +19,8 @@ env.ParseConfig("pkg-config --cflags --libs " + ' '.join(pkg_config_packages))
 env.Append(LIBS=['m'])
 env.Append(
     CFLAGS=[
-#        '-Wall', '-Werror'
+        '-Wall',
+        #'-Werror'
     ]
 )
 

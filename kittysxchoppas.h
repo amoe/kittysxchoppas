@@ -4,9 +4,6 @@
 #include <gst/gst.h>
 #include <gst/video/navigation.h>
 
-GST_DEBUG_CATEGORY_STATIC (playback_debug);
-#define GST_CAT_DEFAULT (playback_debug)
-
 
 /* Copied from gst-plugins-base/gst/playback/gstplay-enum.h */
 typedef enum
@@ -167,24 +164,24 @@ typedef struct
 } PlaybackApp;
 
 
-static void clear_streams (PlaybackApp * app);
-static void find_interface_elements (PlaybackApp * app);
-static void volume_notify_cb (GstElement * pipeline, GParamSpec * arg,
+void clear_streams (PlaybackApp * app);
+void find_interface_elements (PlaybackApp * app);
+void volume_notify_cb (GstElement * pipeline, GParamSpec * arg,
     PlaybackApp * app);
-static void mute_notify_cb (GstElement * pipeline, GParamSpec * arg,
+void mute_notify_cb (GstElement * pipeline, GParamSpec * arg,
     PlaybackApp * app);
 
 
-static void video_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void text_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void audio_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void buffer_size_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void buffer_duration_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void ringbuffer_maxsize_activate_cb (GtkEntry * entry,
+void video_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void text_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void audio_sink_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void buffer_size_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void buffer_duration_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void ringbuffer_maxsize_activate_cb (GtkEntry * entry,
     PlaybackApp * app);
-static void connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app);
-static void subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void connection_speed_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void av_offset_activate_cb (GtkEntry * entry, PlaybackApp * app);
+void subtitle_encoding_activate_cb (GtkEntry * entry, PlaybackApp * app);
 
 gchar *generate_frame_accurate_cut_command(
     char *input_path, char *output_path, double start_position,
