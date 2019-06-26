@@ -1,4 +1,10 @@
+import os
+
 env = Environment()
+
+maybe_term = os.environ.get('TERM')
+if maybe_term:
+    env['ENV']['TERM'] = maybe_term
 
 prefix = "/usr/local"
 bindir = prefix + "/bin"
@@ -11,6 +17,11 @@ pkg_config_packages = [
 
 env.ParseConfig("pkg-config --cflags --libs " + ' '.join(pkg_config_packages))
 env.Append(LIBS=['m'])
+env.Append(
+    CFLAGS=[
+#        '-Wall', '-Werror'
+    ]
+)
 
 env.Program('kittysxchoppas', ['kittysxchoppas.c', 'layer1.c'])
 

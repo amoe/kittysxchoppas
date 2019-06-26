@@ -3225,7 +3225,7 @@ main (int argc, char **argv)
   return 0;
 }
 
-static void
+void
 set_marker_a_cb (GtkButton * button, PlaybackApp * app)
 {
   printf("SETTING MARKER A\n");
@@ -3243,7 +3243,7 @@ set_marker_a_cb (GtkButton * button, PlaybackApp * app)
 
 }
 
-static void
+void
 set_marker_b_cb (GtkButton * button, PlaybackApp * app)
 {
     printf("SETTING MARKER B\n");
@@ -3262,7 +3262,7 @@ set_marker_b_cb (GtkButton * button, PlaybackApp * app)
 
 }
 
-static void
+void
 cut_cb (GtkButton * button, PlaybackApp * app)
 {
   printf("CUTTING FROM %" G_GINT64_FORMAT " TO %" G_GINT64_FORMAT "\n",
@@ -3304,7 +3304,7 @@ cut_cb (GtkButton * button, PlaybackApp * app)
 }
 
 
-static gchar *get_output_path(PlaybackApp *app) {
+gchar *get_output_path(PlaybackApp *app) {
     guint8 this_cut = ++app->number_cuts;
     const gchar *homedir = g_get_home_dir();
     GFile *parent_dir = g_file_new_for_path(homedir);
@@ -3321,7 +3321,7 @@ static gchar *get_output_path(PlaybackApp *app) {
 }
 
 
-static gchar *generate_frame_accurate_cut_command(
+gchar *generate_frame_accurate_cut_command(
     char *input_path, char *output_path, double start_position,
     double end_position
 ) {
@@ -3345,7 +3345,7 @@ static gchar *generate_frame_accurate_cut_command(
 
 
 
-static gchar *generate_keyframe_cut_command(
+gchar *generate_keyframe_cut_command(
     char *input_path, char *output_path, double start_position,
     double end_position
 ) {
@@ -3367,7 +3367,7 @@ static gchar *generate_keyframe_cut_command(
 }
 
 
-static void update_marker_labels(PlaybackApp *app) {
+void update_marker_labels(PlaybackApp *app) {
     // use correct format
   struct timestamp start = convert_ns_value(app->marker_a_position, 3);
   struct timestamp end = convert_ns_value(app->marker_b_position, 3);
@@ -3390,7 +3390,7 @@ static void update_marker_labels(PlaybackApp *app) {
 
 
 
-static void
+void
 seek_forward_frame_cb (GtkButton *button, PlaybackApp * app) {
   gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
 
@@ -3415,7 +3415,7 @@ seek_forward_frame_cb (GtkButton *button, PlaybackApp * app) {
 
 }
 
-static void
+void
 seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
   gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
 
@@ -3440,7 +3440,7 @@ seek_back_frame_cb (GtkButton *button, PlaybackApp * app) {
 
 }
 
-static void
+void
 seek_ten_cb (GtkButton *button, PlaybackApp * app) {
   gdouble current_value = gtk_range_get_value(GTK_RANGE(app->seek_scale));
 
