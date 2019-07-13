@@ -4,6 +4,8 @@
 #include <gst/gst.h>
 #include <gst/video/navigation.h>
 
+GST_DEBUG_CATEGORY_STATIC (playback_debug);
+#define GST_CAT_DEFAULT (playback_debug)
 
 /* Copied from gst-plugins-base/gst/playback/gstplay-enum.h */
 typedef enum
@@ -236,5 +238,15 @@ static const Pipeline pipelines[] = {
 };
 
 
+// These should be factored into layer1
+
+void create_ui (PlaybackApp * app);
+void connect_bus_signals (PlaybackApp * app);
+void
+play_cb (GtkButton * button, PlaybackApp * app);
+void
+pause_cb (GtkButton * button, PlaybackApp * app);
+void
+reset_app (PlaybackApp * app);
 
 #endif /* KITTYSXCHOPPAS_H */

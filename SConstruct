@@ -24,7 +24,12 @@ env.Append(
     ]
 )
 
-env.Program('kittysxchoppas', ['kittysxchoppas.c', 'layer1.c'])
+env.Program(
+    'kittysxchoppas',
+    [
+        'main.c', 'layer1.c', 'kittysxchoppas.c'
+    ]
+)
 
 env.Program('test', ['test.c'], LIBS=['check', 'subunit', 'rt', 'm', 'pthread'])
 
