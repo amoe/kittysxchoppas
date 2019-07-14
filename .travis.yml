@@ -1,4 +1,6 @@
 language: c
 dist: xenial
+install: 
+  - apt install scons
 script:
   - scons
