@@ -240,13 +240,38 @@ static const Pipeline pipelines[] = {
 
 // These should be factored into layer1
 
-void create_ui (PlaybackApp * app);
-void connect_bus_signals (PlaybackApp * app);
+GstBusSyncReply
+bus_sync_handler (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
 void
-play_cb (GtkButton * button, PlaybackApp * app);
+msg_state_changed (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
 void
-pause_cb (GtkButton * button, PlaybackApp * app);
+msg_segment_done (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
 void
-reset_app (PlaybackApp * app);
+msg_async_done (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+message_received (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg_clock_lost (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg_eos (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg_buffering (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg_step_done (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg_sync_step_done (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
+void
+msg (GstBus * bus, GstMessage * message, PlaybackApp * app);
+
 
 #endif /* KITTYSXCHOPPAS_H */
