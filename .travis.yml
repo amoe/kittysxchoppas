@@ -3,6 +3,6 @@ dist: xenial
 before_install: 
   - sudo apt-get install python3-pip
 install:
-  - sudo pip3 install scons
+  - sudo pip3 install scons==3.0.5
 script:
-  - scons
+  - python3 /usr/local/bin/scons
