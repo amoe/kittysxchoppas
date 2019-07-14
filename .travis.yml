@@ -1,6 +1,6 @@
 language: c
 dist: xenial
 install: 
-  - sudo apt install scons
+  - sudo pip3 install scons
 script:
   - scons
