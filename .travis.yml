@@ -6,3 +6,4 @@ install:
   - sudo pip3 install scons==3.0.5
 script:
   - python3 /usr/local/bin/scons
+  - ./test
