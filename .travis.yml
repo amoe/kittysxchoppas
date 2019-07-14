@@ -1,7 +1,7 @@
 language: c
 dist: xenial
 before_install: 
-  - sudo apt-get install python3-pip
+  - sudo apt-get install python3-pip libglib2.0-dev libgstreamer-plugins-base1.0-dev libgtk-3-dev ffmpeg
 install:
   - sudo pip3 install scons==3.0.5
 script:
