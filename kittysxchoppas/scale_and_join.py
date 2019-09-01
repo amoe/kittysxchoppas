@@ -51,7 +51,7 @@ class PythonScript(object):
         channels = 2
 
         width, height = self.scan_for_resolution(input_paths)
-        print "Chosen dimensions: %dx%d" % (width, height)
+        print("Chosen dimensions: %dx%d" % (width, height))
         
         tempfiles = []
         
@@ -76,12 +76,12 @@ class PythonScript(object):
             os.remove(path)
 
     def join_videos(self, paths, output):
-        print repr(paths)
+        print(repr(paths))
         with tempfile.NamedTemporaryFile(
             suffix=".lst", prefix="concat_list-", delete=False
         ) as concat_list:
             for path in paths:
-                print repr(path)
+                print(repr(path))
                 concat_list.write("file '%s'\n" % path)
 
             concat_list_path = concat_list.name

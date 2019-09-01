@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import sys
 import logging
@@ -29,16 +29,16 @@ class MovieCutter(object):
         format_info = self.ffprobe(input_file_path)
 
         duration = float(format_info['format']['duration'])
-        print duration
+        print(duration)
         cut_number = 1
         
         with open(cutpoints_path, 'rb') as f:
             for line in f:
                 cutpoint_str = line.rstrip()
-                print cutpoint_str
+                print(cutpoint_str)
 
                 seconds_val = self.str_to_seconds(cutpoint_str)
-                print seconds_val
+                print(seconds_val)
 
                 start_time = seconds_val - 10
                 end_time = seconds_val + 10
@@ -63,7 +63,7 @@ class MovieCutter(object):
             "/usr/local/bin/keyframe-snap-cut", str(start_time), str(end_time),
             input_file,  output_file
         ]
-        print ' '.join(cmd)
+        print(' '.join(cmd))
         
         subprocess.check_call(cmd)
              
