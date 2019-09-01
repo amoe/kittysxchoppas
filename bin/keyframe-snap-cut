@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import sqlite3
 import os
-import ffprobe
+import kittysxchoppas.ffprobe
 
 
 CACHE_DATABASE_PATH = "~/.keyframe_snap_cut.sqlite"
@@ -123,7 +123,7 @@ class KeyframeSnapCut(object):
         
     def probe_frames(self, input_path):
         print("Generating frame list...")
-        data = ffprobe.ffprobe("-show_frames", input_path)
+        data = kittysxchoppas.ffprobe.ffprobe("-show_frames", input_path)
         print("Locating correct keyframes...")
         keyframes = self.convert_ffprobe_keyframes(data['frames'])
         return keyframes
