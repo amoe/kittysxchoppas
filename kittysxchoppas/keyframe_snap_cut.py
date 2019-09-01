@@ -166,7 +166,7 @@ class KeyframeSnapCut(object):
         subprocess.check_call(cmd)
 
                
-if __name__ == "__main__":
+def main():
     obj = KeyframeSnapCut()
     obj.run_from_cli(sys.argv[1:])
         
