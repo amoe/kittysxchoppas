@@ -4,7 +4,7 @@
 # main test suite
 
 import unittest
-import keyframe_snap_cut
+import kittysxchoppas.keyframe_snap_cut
 import pprint
 import shutil
 import os
@@ -21,7 +21,7 @@ class TestThings(unittest.TestCase):
         os.remove(self.weird_filename)
 
     def test_weird_filenames(self):
-        obj = keyframe_snap_cut.KeyframeSnapCut()
+        obj = kittysxchoppas.keyframe_snap_cut.KeyframeSnapCut()
         result = obj.get_keyframes(self.weird_filename)
         expected_result = [
             0.0,
