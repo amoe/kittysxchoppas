@@ -4,9 +4,6 @@
 #include <gst/gst.h>
 #include <gst/video/navigation.h>
 
-GST_DEBUG_CATEGORY_STATIC (playback_debug);
-#define GST_CAT_DEFAULT (playback_debug)
-
 /* Copied from gst-plugins-base/gst/playback/gstplay-enum.h */
 typedef enum
 {

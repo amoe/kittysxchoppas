@@ -4,6 +4,10 @@
 #include "layer1.h"
 #include "kittysxchoppas.h"
 
+// This has to live here, because it can only be initialized within this
+// translation unit.
+GST_DEBUG_CATEGORY_STATIC (playback_debug);
+#define GST_CAT_DEFAULT (playback_debug)
 
 int main (int argc, char **argv) {
     PlaybackApp app;
