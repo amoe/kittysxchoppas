@@ -8,8 +8,7 @@ END_TEST
 
 
  
-Suite * money_suite(void)
-{
+Suite *money_suite(void) {
     Suite *s;
     TCase *tc_core;
 
@@ -37,4 +36,3 @@ int main() {
     srunner_free(sr);
     return (number_failed == 0) ? 0 : 1;
 }
-

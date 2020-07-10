@@ -37,6 +37,7 @@
 #include <gtk/gtk.h>
 #include <gst/gst.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <gdk/gdk.h>
 #if defined (GDK_WINDOWING_X11)
@@ -2990,45 +2991,75 @@ set_marker_b_cb (GtkButton * button, PlaybackApp * app)
 
 }
 
-void
-cut_cb (GtkButton * button, PlaybackApp * app)
-{
-  printf("CUTTING FROM %" G_GINT64_FORMAT " TO %" G_GINT64_FORMAT "\n",
-	 app->marker_a_position, app->marker_b_position);
+void cut_cb(GtkButton *button, PlaybackApp *app) {
+    printf("CUTTING FROM %" G_GINT64_FORMAT " TO %" G_GINT64_FORMAT "\n",
+           app->marker_a_position, app->marker_b_position);
 
-  gboolean is_frame_accurate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(app->frame_accurate_checkbox));
+    gboolean is_frame_accurate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(app->frame_accurate_checkbox));
 
-  char *input_path = app->current_path->data;
-  char *output_path = get_output_path(app);
+    char *input_path = app->current_path->data;
+    char *output_path = get_output_path(app);
 
-  double seconds_conversion = pow(10, 9);
+    // XXX: Bug here is that the counter will still be incremented.
+    // This avoids the total facepalm of overwriting the original, though.
+    if (g_file_test(output_path, G_FILE_TEST_EXISTS)) {
+        GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+        GtkWidget *dialog = gtk_message_dialog_new(
+            GTK_WINDOW(app->window),
+            flags,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            "Refusing to overwrite existing output file."
+        );
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        return;   // don't reset markers
+    }
+
+    double seconds_conversion = pow(10, 9);
   
-  double second_start = app->marker_a_position / seconds_conversion;
-  double second_end = app->marker_b_position / seconds_conversion;
+    double second_start = app->marker_a_position / seconds_conversion;
+    double second_end = app->marker_b_position / seconds_conversion;
 
-  char *command;
-  if (is_frame_accurate) {
-    command = generate_frame_accurate_cut_command(
-        input_path, output_path, second_start, second_end
-    );
-  } else {
-    command = generate_keyframe_cut_command(
-     input_path, output_path, second_start, second_end
-    );
-  }
+    char *command;
+    if (is_frame_accurate) {
+        command = generate_frame_accurate_cut_command(
+            input_path, output_path, second_start, second_end
+        );
+    } else {
+        command = generate_keyframe_cut_command(
+            input_path, output_path, second_start, second_end
+        );
+    }
 
-  printf("Will run command: '%s'\n", command);
-  int ret = system(command);
-  if (ret != 0)
-      g_warning("system call failed with return code %d", ret);
+    printf("Will run command: '%s'\n", command);
+    int ret = system(command);
 
-  printf("Cut finished.\n");
+    if (ret != 0) {
+        bool has_exit_code = WIFEXITED(ret);
+        if (has_exit_code) {
+            g_warning("system call failed with return code %d", WEXITSTATUS(ret));
+        }
 
-  app->marker_a_position = 0;
-  app->marker_b_position = 0;
-  update_marker_labels(app);
+        GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+        GtkWidget *dialog = gtk_message_dialog_new(
+            GTK_WINDOW(app->window),
+            flags,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            "Error running cut command!  Please check the console output."
+        );
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        return;   // don't reset markers
+    }
+
+    printf("Cut finished.\n");
+
+    app->marker_a_position = 0;
+    app->marker_b_position = 0;
+    update_marker_labels(app);
     gtk_widget_grab_focus(app->seek_scale);
-
 }
 
 
