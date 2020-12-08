@@ -31,5 +31,20 @@ You can use `setup.py` to install them.
 Run `python3 setup.py install`.  This will create several scripts under
 `/usr/local/bin`.
 
-`keyframe-snap-cut` -- this will divide a video based on keyframe snaps.
 
+
+## keyframe-snap-cut
+
+This will losslessly divide a video at keyframes.
+
+
+Note: There are rare videos that can trigger a [bug in
+ffmpeg](https://trac.ffmpeg.org/ticket/8820).  It's quite difficult to tell
+which these are.  Their distinguishing feature is that keyframe-snap-cut will
+see them as having very few keyframes.  For instance, they may appear to have
+less than 10 keyframes for an entire video.  In reality, they do have a more
+normal number of keyframes, but `-skip_frame nokey` does not include these
+frames.  Unfortunately without `-skip_frame nokey` the keyframe gathering
+process is an order of magnitude slower, and we use a slightly naive strategy,
+meaning that dealing with this bug would be prohibitive given the tiny number of
+files it affects.
