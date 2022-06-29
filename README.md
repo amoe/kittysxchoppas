@@ -31,6 +31,14 @@ You can use `setup.py` to install them.
 Run `python3 setup.py install`.  This will create several scripts under
 `/usr/local/bin`.
 
+Caveats
+-------
+
+Note that the GUI will appear to freeze while performing the first cut.  This is
+because the subprocess is building its keyframe cache.  Ideally there would be a
+progress bar or loading spinner, but c'est la vie.  After the first cut, future
+cuts should be faster.
+
 
 
 ## keyframe-snap-cut
